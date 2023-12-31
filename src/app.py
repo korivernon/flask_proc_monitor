@@ -40,6 +40,7 @@ def index():
 @app.route("/more_info/<process_name>")
 def more_info(process_name):
     data = find_procs_to_monitor_and_enrich(group=False)
+    data = data[data['process_name_'] == process_name]
     avg = data['score'].mean()
     if avg == 1:
         color = 'green_dark'
@@ -52,32 +53,33 @@ def more_info(process_name):
     else:
         color = 'red_light'
     print(data)
-    target = data[data['process_name_'] == process_name ]
-    header = html.unescape(build_table(target, color))
+    header = html.unescape(build_table(data, color))
 
     # fetch last 10 lines of output
+    stderr = html.unescape(fetch_stderr(process_name))
     # fetch last 10 lines of input
+    stdout = html.unescape(fetch_stdout(process_name))
     # last updated logs time
-    return render_template('more_info.html', header=header, process_name=process_name)
+    return render_template('more_info.html', header=header, process_name=process_name, stderr=stderr, stdout=stdout)
 
 
 @app.route("/start/<process_name>", methods=['GET'])
 def start(process_name):
     time.sleep(2)
     start_job(process_name)
-    return index()
+    return redirect(url_for('index'))
 
 @app.route("/stop/<process_name>", methods=['GET'])
 def stop(process_name):
     time.sleep(2)
     stop_job(process_name)
-    return index()
+    return redirect(url_for('index'))
 
 @app.route("/restart/<process_name>", methods=['GET'])
 def restart(process_name):
     time.sleep(2)
     restart_job(process_name)
-    return index()
+    return redirect(url_for('index'))
 def launch():
     app.run(host='0.0.0.0', port=8001)
 

@@ -99,10 +99,11 @@ class MetadataDBConnect:
 
     def insert_process(self, process_name, script_path, command_line, plist, run_at_load, active, project_name):
         sql = f'''
-        INSERT INTO scheduler_info
-        VALUES ('{process_name},'{script_path}','{command_line}','{plist}','{run_at_load}', '{active}','{project_name}');
+        INSERT INTO scheduler_info (process_name, script_path, command_line, plist, run_at_load, active, project_name)
+        VALUES ('{process_name}','{script_path}','{command_line}','{plist}','{run_at_load}', '{active}','{project_name}');
             '''
         try:
+            print(sql)
             self.run_sql_err(sql)
         except:
             print(traceback.format_exc())

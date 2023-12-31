@@ -66,6 +66,18 @@ def stop_job(job_name):
         return False
     return True
 
+def fetch_stderr(job_name, target_dir = TARGET_DIR, join_by='<br>'):
+    file_path = os.path.join(target_dir, job_name, 'stderr')
+    file_name = os.path.join(file_path, get_latest_file(file_path))
+    result = tail(file_name)
+    return join_by.join(result)
+
+def fetch_stdout(job_name, target_dir = TARGET_DIR, join_by='<br>'):
+    file_path = os.path.join(target_dir, job_name, 'stdout')
+    file_name = os.path.join(file_path, get_latest_file(file_path))
+    result = tail(file_name)
+    return join_by.join(result)
+
 def restart_job(job_name):
     stop_job(job_name)
     start_job(job_name)
@@ -74,7 +86,7 @@ def restart_job(job_name):
 def is_script_running(script_name):
     try:
         # Use pgrep to find processes with a name matching the script_name
-        script_name = script_name.replace('trapbookpro','trapbookair')
+        # script_name = script_name.replace('trapbookpro','trapbookair')
         print(f'checking script running: {script_name}')
         result = subprocess.run(["pgrep", "-f", script_name], capture_output=True, text=True)
 
@@ -131,19 +143,24 @@ def find_procs_to_monitor_and_enrich(group=True):
             row['color'] = 'RED'
             row['score'] = -1
             row['START'] = f'<a href="/start/{row["process_name"]}">START</a>'
+            row['STOP'] = 'N/A'
+            row['RESTART'] = f'<a href="/restart/{row["process_name"]}">RESTART</a>'
         elif row['running'] == True and row['active'] == True:
             row['flag'] = False
             row['color'] = 'GREEN'
             row['score'] = 1
+            row['START'] = 'N/A'
             row['STOP'] = f'<a href="/stop/{row["process_name"]}">STOP</a>'
-            row['RESTART'] = f'<a href="/restart/{row["process_name"]}" target="_blank">RESTART</a>'
+            row['RESTART'] = f'<a href="/restart/{row["process_name"]}">RESTART</a>'
         else:
             row['flag'] = False
             row['color'] = 'GREY'
             row['score'] = 0
+            row['STOP'] = 'N/A'
+            row['RESTART'] = 'N/A'
             row['START'] = f'<a href="/start/{row["process_name"]}">START</a>'
         row['process_name_'] = row["process_name"]
-        row['process_name'] = f'<a href="/more_info/{row["process_name"]}" target="_blank">{row["process_name"]}</a>'
+        row['process_name'] = f'<a href="/more_info/{row["process_name"]}">{row["process_name"]}</a>'
 
         enriched.append(row)
     enriched_procs = pd.DataFrame(enriched)
@@ -153,4 +170,37 @@ def find_procs_to_monitor_and_enrich(group=True):
         return enriched_procs # dataframe
     return segregated
 
+def tail(filepath, lines=100):
+    """Tails the last `lines` lines of a file."""
+    with open(filepath, 'rb') as f:
+        f.seek(-2, 2)  # Jump to the second-last byte.
+        while f.read(1) != b'\n':
+            if f.tell() == 1:  # Reached the beginning of the file.
+                f.seek(0)
+                break
+            f.seek(-2, 1)
 
+        lines_to_read = lines + 1  # Read one extra line to cover edge cases.
+        block_size = 1024
+        blocks = []
+
+        while lines_to_read > 0 and f.tell() > 0:
+            if f.tell() > block_size:
+                f.seek(-block_size, 1)
+            blocks.append(f.read(block_size))
+            lines_found = blocks[-1].count(b'\n')
+            lines_to_read -= lines_found
+
+        blocks.reverse()
+        return b''.join(blocks).decode().splitlines()[-lines:]
+
+def get_latest_file(directory):
+    """Gets the latest file in a directory."""
+    return max(os.listdir(directory), key=lambda f: os.path.getmtime(os.path.join(directory, f)))
+
+def main():
+    target_dir = '/Users/trapbookair/Development/scheduling'
+    print(fetch_stdout(target_dir=target_dir,job_name='emon_server_runner', join_by='\n'))
+
+if __name__ == '__main__':
+    main()
