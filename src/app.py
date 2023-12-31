@@ -77,6 +77,9 @@ def stop(process_name):
 def restart(process_name):
     restart_job(process_name)
     return redirect(url_for('index'))
+
+
+
 def launch():
     app.run(host='0.0.0.0', port=8001)
 

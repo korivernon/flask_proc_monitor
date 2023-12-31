@@ -97,15 +97,15 @@ def create_process_and_dir(command_line,process_name, project_name, target_dir=T
                             project_name=project_name)
 
 def main():
-    target_dir = '/Users/trapbookair/Development/scheduling'
+    target_dir = '/Users/trapbookpro/Development/scheduling'
     # create_trigger_files('test_process', target_dir=target_dir)
     create_process_and_dir(
-        command_line='/opt/homebrew/bin/python3 /Users/trapbookair/Development/etrade-monitor/emon_main.py -vo',
-        process_name='vol_outliers',
-        project_name='EMON',
+        command_line='/opt/homebrew/bin/python3 /Users/trapbookpro/Development/flask_proc_monitor/src/app.py',
+        process_name='pmon_server',
+        project_name='PMON',
         target_dir=target_dir,
-        run_at_load=False,
-        active=False
+        run_at_load=True,
+        active=True
     )
 
 if __name__ == '__main__':
