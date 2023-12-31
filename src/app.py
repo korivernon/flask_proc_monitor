@@ -65,19 +65,16 @@ def more_info(process_name):
 
 @app.route("/start/<process_name>", methods=['GET'])
 def start(process_name):
-    time.sleep(2)
     start_job(process_name)
     return redirect(url_for('index'))
 
 @app.route("/stop/<process_name>", methods=['GET'])
 def stop(process_name):
-    time.sleep(2)
     stop_job(process_name)
     return redirect(url_for('index'))
 
 @app.route("/restart/<process_name>", methods=['GET'])
 def restart(process_name):
-    time.sleep(2)
     restart_job(process_name)
     return redirect(url_for('index'))
 def launch():
